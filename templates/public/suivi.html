@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+{% block title %}Suivre une demande - HelpDesk{% endblock %}
+
+{% block public_content %}
+<div class="public-content">
+
+  <!-- Bouton retour flottant en haut à gauche -->
+  <div class="back-bar">
+    <a href="{{ url_for('nouvelle_demande') }}"
+       class="back-btn"
+       title="Retour au formulaire">
+      <svg viewBox="0 0 24 24" width="16" height="16"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span>Retour</span>
+    </a>
+  </div>
+
+  <div class="public-page">
+
+    <header class="public-header">
+      <img src="{{ url_for('static', filename='logo.jpg') }}"
+           alt="Logo" class="public-logo">
+      <h1>HELPDESK</h1>
+      <p class="public-subtitle">Suivi de votre demande</p>
+    </header>
+
+    <div class="public-card">
+
+      <div class="card-head">
+        <span class="card-icon">🔎</span>
+        <div>
+          <h2>Suivre une demande</h2>
+          <p class="public-desc">
+            Entrez le numéro de ticket reçu lors de l'envoi pour consulter l'avancement de votre demande.
+          </p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" class="suivi-form">
+        <div class="form-group">
+          <label for="champNumero">Numéro de ticket</label>
+          <input type="text" id="champNumero" name="numero" required
+                 maxlength="50" autocomplete="off"
+                 placeholder="TCK-20261028-1234">
+        </div>
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24" width="18" height="18"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Rechercher
+        </button>
+      </form>
+
+      {% if demande %}
+        <div class="resultat">
+          <div class="resultat-head">
+            <span class="resultat-badge">🎫 Ticket</span>
+            <span class="ticket-numero">{{ demande.numero_ticket }}</span>
+          </div>
+
+          <div class="resultat-grid">
+            <div class="resultat-item">
+              <span class="resultat-label">Sujet</span>
+              <span class="resultat-value">{{ demande.titre }}</span>
+            </div>
+            <div class="resultat-item">
+              <span class="resultat-label">Statut</span>
+              <span class="statut statut-{{ demande.statut|lower|replace(' ', '_') }}">
+                {{ demande.statut|replace('_', ' ')|capitalize }}
+              </span>
+            </div>
+            <div class="resultat-item">
+              <span class="resultat-label">Créée le</span>
+              <span class="resultat-value">
+                {{ demande.date_demande.strftime('%d/%m/%Y à %H:%M') }}
+              </span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="public-footer-links">
+        <a href="{{ url_for('nouvelle_demande') }}">➕ Nouvelle demande</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STYLES DE LA PAGE                                            -->
+<!-- ============================================================ -->
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #1e3a8a;
+  }
+
+  .public-content {
+    --pc-blue-900: #1e3a8a;
+    --pc-blue-700: #1d4ed8;
+    --pc-blue-600: #2563eb;
+    --pc-blue-500: #3b82f6;
+    --pc-text:     #0f172a;
+    --pc-border:   #cbd5e1;
+
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 80px 20px 48px;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--pc-text);
+    
+    /* Image de fond + voile sombre */
+    background-image: 
+      linear-gradient(rgba(15, 23, 42, 0.80), rgba(15, 23, 42, 0.80)),
+      url('{{ url_for("static", filename="fond.jpg") }}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .public-content *,
+  .public-content *::before,
+  .public-content *::after { box-sizing: border-box; }
+
+  .public-content .public-page {
+    width: 100%;
+    max-width: 580px;
+  }
+
+  /* ---------- Bouton retour flottant ---------- */
+  .public-content .back-bar {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 10;
+  }
+
+  .public-content .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, .25);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition: all .2s ease;
+  }
+
+  .public-content .back-btn:hover {
+    background: rgba(255, 255, 255, .24);
+    color: #fff;
+    text-decoration: none;
+    transform: translateX(-3px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+  }
+
+  .public-content .back-btn svg { flex-shrink: 0; }
+
+  /* ---------- En-tête (logo + titre) ---------- */
+  .public-content .public-header {
+    text-align: center;
+    margin-bottom: 26px;
+    color: #fff;
+  }
+
+  .public-content .public-logo {
+    display: block;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: #fff;
+    padding: 6px;
+    object-fit: contain;
+    border: 3px solid rgba(255, 255, 255, .55);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+  }
+
+  .public-content .public-header h1 {
+    margin: 0 0 4px;
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+  }
+
+  .public-content .public-subtitle {
+    margin: 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, .92);
+  }
+
+  /* ---------- Carte principale ---------- */
+  .public-content .public-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, .3);
+  }
+
+  /* ---------- En-tête de carte ---------- */
+  .public-content .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .public-content .card-icon {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, .15);
+  }
+
+  .public-content .card-head h2 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    letter-spacing: -.3px;
+    color: #1e3a8a;
+  }
+
+  .public-content .card-head .public-desc {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #5b6b82;
+  }
+
+  /* ---------- Messages flash ---------- */
+  .public-content .flash {
+    display: block;
+    margin-bottom: 18px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    font-size: .95rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .public-content .flash.success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; border-left-color: #10b981; }
+  .public-content .flash.error,
+  .public-content .flash.danger  { background: #fef2f2; color: #991b1b; border-color: #fecaca; border-left-color: #ef4444; }
+  .public-content .flash.warning { background: #fffbeb; color: #92400e; border-color: #fde68a; border-left-color: #f59e0b; }
+  .public-content .flash.info,
+  .public-content .flash.message { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; border-left-color: #2563eb; }
+
+  /* ---------- Formulaire de suivi ---------- */
+  .public-content .suivi-form { margin-top: 8px; }
+
+  .public-content .form-group {
+    margin: 0 0 4px;
+    min-width: 0;
+  }
+
+  .public-content .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: .86rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .public-content .form-group input {
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: .97rem;
+    color: var(--pc-text);
+    background: #fff;
+    border: 1.5px solid var(--pc-border);
+    border-radius: 10px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .public-content .form-group input::placeholder {
+    color: #6b7a90;
+    opacity: 1;
+  }
+
+  .public-content .form-group input:hover { border-color: #94a3b8; }
+
+  .public-content .form-group input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .18);
+  }
+
+  /* ---------- Bouton principal ---------- */
+  .public-content .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px 26px;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, .35);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  }
+
+  .public-content .btn-primary svg { flex-shrink: 0; }
+
+  .public-content .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, .45);
+    filter: brightness(1.05);
+  }
+
+  .public-content .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, .35);
+  }
+
+  .public-content .btn-primary:focus-visible,
+  .public-content a:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, .45);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Résultat ---------- */
+  .public-content .resultat {
+    margin-top: 26px;
+    padding: 22px;
+    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+    border-radius: 14px;
+    border: 1px solid #dbeafe;
+    animation: resultIn .35s ease-out;
+  }
+
+  @keyframes resultIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .public-content .resultat-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed #bfdbfe;
+  }
+
+  .public-content .resultat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #1e40af;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, .12);
+  }
+
+  .public-content .ticket-numero {
+    font-family: "Courier New", monospace;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    color: #1e3a8a;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, .12);
+    overflow-wrap: anywhere;
+  }
+
+  .public-content .resultat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+
+  .public-content .resultat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .public-content .resultat-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #5b6b82;
+  }
+
+  .public-content .resultat-value {
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: #0f172a;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Badges de statut ---------- */
+  .public-content .statut {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    font-size: .85rem;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  .public-content .statut::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .public-content .statut-nouveau, .public-content .statut-nouvelle, .public-content .statut-ouvert, .public-content .statut-ouverte, .public-content .statut-recu, .public-content .statut-reçu, .public-content .statut-envoye, .public-content .statut-envoyé { background: #dbeafe; color: #1e40af; }
+  .public-content .statut-en_cours, .public-content .statut-en-cours, .public-content .statut-assigne, .public-content .statut-assigné, .public-content .statut-assignee, .public-content .statut-assignée, .public-content .statut-pris_en_charge { background: #fef3c7; color: #92400e; }
+  .public-content .statut-en_attente, .public-content .statut-en-attente, .public-content .statut-attente { background: #ede9fe; color: #5b21b6; }
+  .public-content .statut-resolu, .public-content .statut-résolu, .public-content .statut-resolue, .public-content .statut-résolue, .public-content .statut-termine, .public-content .statut-terminé, .public-content .statut-terminee, .public-content .statut-terminée, .public-content .statut-traite, .public-content .statut-traité, .public-content .statut-traitee, .public-content .statut-traitée { background: #d1fae5; color: #065f46; }
+  .public-content .statut-ferme, .public-content .statut-fermé, .public-content .statut-fermee, .public-content .statut-fermée, .public-content .statut-clos, .public-content .statut-cloture, .public-content .statut-clôturé { background: #e5e7eb; color: #374151; }
+  .public-content .statut-annule, .public-content .statut-annulé, .public-content .statut-annulee, .public-content .statut-annulée, .public-content .statut-rejete, .public-content .statut-rejeté, .public-content .statut-rejetee, .public-content .statut-refuse, .public-content .statut-refusé { background: #fee2e2; color: #991b1b; }
+
+  /* ---------- Liens du bas ---------- */
+  .public-content .public-footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+    font-size: .95rem;
+  }
+
+  .public-content .public-footer-links a {
+    color: #1d4ed8;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color .2s ease;
+  }
+
+  .public-content .public-footer-links a:hover {
+    color: #1e3a8a;
+    text-decoration: underline;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 600px) {
+    .public-content { padding: 70px 14px 32px; }
+    .public-content .back-bar { top: 14px; left: 14px; }
+    .public-content .back-btn { padding: 8px 14px; font-size: 12.5px; }
+    .public-content .back-btn span { display: none; }
+    .public-content .public-header h1 { font-size: 1.6rem; letter-spacing: 3px; }
+    .public-content .public-logo { width: 64px; height: 64px; }
+    .public-content .public-card { padding: 22px 18px; border-radius: 16px; }
+    .public-content .card-head { gap: 10px; }
+    .public-content .card-icon { width: 40px; height: 40px; font-size: 18px; }
+    .public-content .card-head h2 { font-size: 18px; }
+    .public-content .resultat { padding: 18px; }
+    .public-content .resultat-grid { grid-template-columns: 1fr; }
+    .public-content .ticket-numero { font-size: 15px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .public-content * { transition: none !important; animation: none !important; }
+  }
+</style>
+{% endblock %}

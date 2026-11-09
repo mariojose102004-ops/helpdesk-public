@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Demande enregistrée - HelpDesk{% endblock %}
+
+{% block public_content %}
+<div class="public-page">
+  <header class="public-header">
+    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="public-logo">
+    <h1>HELPDESK</h1>
+  </header>
+
+  <div class="public-card confirmation-card">
+    <div class="success-icon">✅</div>
+    <h2>Votre demande a été enregistrée</h2>
+    <p class="public-desc">
+      Merci, votre demande a bien été transmise à l'administrateur.
+    </p>
+
+    <div class="ticket-box">
+      <p class="ticket-label">Numéro de ticket</p>
+      <p class="ticket-numero">{{ numero }}</p>
+      <p class="ticket-email">Email : {{ email }}</p>
+    </div>
+
+    <div class="warning-box">
+      ⚠️ <strong>Conservez ce numéro.</strong>
+      Il vous sera demandé pour suivre l'avancement de votre demande.
+      Notez-le ou faites une capture d'écran.
+    </div>
+
+    <div class="public-footer-links">
+      <a href="{{ url_for('suivi') }}">🔎 Suivre ma demande</a>
+      <a href="{{ url_for('nouvelle_demande') }}">➕ Nouvelle demande</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,818 @@
+{% extends "base.html" %}
+{% block title %}Formulaire - HelpDesk{% endblock %}
+
+{% block public_content %}
+<div class="hd-layout">
+
+  <div class="hd-topbar">
+    <a href="{{ url_for('suivi') }}" class="hd-suivi-btn">
+      <svg viewBox="0 0 24 24" width="16" height="16"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      Suivre mon ticket
+    </a>
+  </div>
+
+  <main class="hd-page">
+    <div class="hd-wrapper">
+
+      <aside class="hd-deco" aria-label="Identité du service">
+        <div class="hd-deco-glow" aria-hidden="true"></div>
+        <img src="{{ url_for('static', filename='logo.jpg') }}"
+             alt="Logo du Ministère"
+             class="hd-deco-logo">
+        <p class="hd-deco-text">
+          Système d'assistance<br>
+          <span class="hd-deco-sub">du Ministère</span>
+        </p>
+        <div class="hd-deco-line" aria-hidden="true"></div>
+        <p class="hd-deco-note">Support technique &amp; informatique</p>
+      </aside>
+
+      <section class="hd-form-col">
+
+        <header class="hd-header">
+          <h1>Besoin d'aide ?</h1>
+          <p class="hd-subtitle">
+            Un numéro de ticket vous sera attribué après l'envoi.
+            Conservez-le pour suivre l'avancement de votre demande.
+          </p>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="hd-flash hd-flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="post" action="{{ url_for('nouvelle_demande') }}"
+              enctype="multipart/form-data"
+              id="formDemande"
+              class="hd-form"
+              novalidate>
+
+          {% if csrf_token is defined %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+
+          <fieldset class="hd-section">
+            <legend class="hd-section-title">
+              <span class="hd-section-num">1</span>
+              Vos coordonnées
+            </legend>
+
+            <div class="hd-row">
+              <div class="hd-field">
+                <label for="champNom">Nom complet <span class="hd-req">*</span></label>
+                <input type="text" id="champNom" name="nom" required
+                       maxlength="120" autocomplete="name"
+                       placeholder="Votre nom et prénom">
+              </div>
+              <div class="hd-field">
+                <label for="champEmail">Email <span class="hd-req">*</span></label>
+                <input type="email" id="champEmail" name="email" required
+                       maxlength="180" autocomplete="email"
+                       placeholder="vous@exemple.com">
+              </div>
+            </div>
+
+            <div class="hd-row">
+              <div class="hd-field">
+                <label for="champService">Service / Département</label>
+                <input type="text" id="champService" name="service"
+                       maxlength="120"
+                       placeholder="Direction, service...">
+              </div>
+              <div class="hd-field">
+                <label for="champBureau">Numéro de bureau <span class="hd-req">*</span></label>
+                <input type="text" id="champBureau" name="numero_bureau" required
+                       maxlength="40"
+                       placeholder="Ex : B12, 204, A-305...">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="hd-section">
+            <legend class="hd-section-title">
+              <span class="hd-section-num">2</span>
+              Votre demande
+            </legend>
+
+            <div class="hd-field">
+              <label for="champSujet">Sujet <span class="hd-req">*</span></label>
+              <input type="text" id="champSujet" name="sujet" required
+                     maxlength="180"
+                     placeholder="Résumé court de votre problème">
+            </div>
+
+            <div class="hd-field">
+              <label>Type de problème <span class="hd-req">*</span></label>
+              <div class="hd-checkbox-grid">
+                <label class="hd-checkbox">
+                  <input type="checkbox" name="categories" value="logiciel">
+                  <span class="hd-checkbox-box" aria-hidden="true"></span>
+                  <span class="hd-checkbox-label">💻 Logiciel</span>
+                </label>
+                <label class="hd-checkbox">
+                  <input type="checkbox" name="categories" value="reseau">
+                  <span class="hd-checkbox-box" aria-hidden="true"></span>
+                  <span class="hd-checkbox-label">🌐 Réseau</span>
+                </label>
+                <label class="hd-checkbox">
+                  <input type="checkbox" name="categories" value="autre">
+                  <span class="hd-checkbox-box" aria-hidden="true"></span>
+                  <span class="hd-checkbox-label">📦 Autre</span>
+                </label>
+              </div>
+              <p class="hd-hint">Cochez au moins une catégorie.</p>
+            </div>
+
+            <div class="hd-field">
+              <label for="champDescription">Description détaillée <span class="hd-req">*</span></label>
+              <textarea id="champDescription" name="description" rows="6" required
+                        maxlength="5000"
+                        placeholder="Décrivez votre problème le plus précisément possible..."></textarea>
+            </div>
+          </fieldset>
+
+          <fieldset class="hd-section">
+            <legend class="hd-section-title">
+              <span class="hd-section-num">3</span>
+              Photo du problème <span class="hd-optional">(optionnel)</span>
+            </legend>
+
+            <div class="hd-photo-zone">
+              <div class="hd-photo-preview" id="photoPreviewBox">
+                <span id="photoPlaceholder" class="hd-photo-placeholder">📷</span>
+                <img id="photoPreview" src="" alt="Aperçu de la photo" style="display:none;">
+              </div>
+
+              <div class="hd-photo-controls">
+                <label for="inputCamera" class="hd-upload-btn">
+                  <span class="hd-upload-icon">📸</span>
+                  <span class="hd-upload-text">
+                    <b>Prendre une photo</b>
+                    <small>Caméra de l'appareil</small>
+                  </span>
+                  <input type="file" id="inputCamera" name="photo_probleme"
+                         accept="image/*" capture="environment"
+                         style="display:none;"
+                         onchange="afficherApercu(this)">
+                </label>
+
+                <label for="inputGalerie" class="hd-upload-btn">
+                  <span class="hd-upload-icon">🖼️</span>
+                  <span class="hd-upload-text">
+                    <b>Importer une photo</b>
+                    <small>Depuis la galerie</small>
+                  </span>
+                  <input type="file" id="inputGalerie" name="photo_probleme"
+                         accept="image/*"
+                         style="display:none;"
+                         onchange="afficherApercu(this)">
+                </label>
+
+                <button type="button" class="hd-remove-btn"
+                        id="btnRetirerPhoto"
+                        onclick="retirerPhoto()"
+                        style="display:none;">
+                  ✕ Retirer la photo
+                </button>
+
+                <p class="hd-hint">JPG, PNG — Taille max : 5 Mo</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="hd-actions">
+            <button type="submit" class="hd-submit">
+              Envoyer ma demande
+              <svg viewBox="0 0 24 24" width="16" height="16"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </form>
+
+      </section>
+    </div>
+  </main>
+</div>
+
+<style>
+  .hd-layout {
+    --hd-primary: #2563eb;
+    --hd-primary-dark: #1d4ed8;
+    --hd-primary-soft: #dbeafe;
+    --hd-text: #0f172a;
+    --hd-text-soft: #475569;
+    --hd-text-mute: #94a3b8;
+    --hd-border: #e2e8f0;
+    --hd-bg-card: #ffffff;
+    --hd-radius: 14px;
+    --hd-radius-sm: 10px;
+    --hd-shadow-sm: 0 1px 2px rgba(15, 23, 42, .04);
+    --hd-shadow-md: 0 6px 20px rgba(15, 23, 42, .08);
+    --hd-shadow-lg: 0 20px 50px rgba(15, 23, 42, .12);
+
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    
+    /* Image de fond + voile sombre */
+    background-image: 
+      linear-gradient(rgba(11, 18, 32, 0.75), rgba(11, 18, 32, 0.75)),
+      url('{{ url_for("static", filename="fop.jpg") }}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    color: var(--hd-text);
+  }
+
+  .hd-topbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px 28px 0;
+  }
+  .hd-suivi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, .95);
+    color: var(--hd-primary-dark);
+    padding: 10px 18px;
+    border-radius: var(--hd-radius-sm);
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+    transition: all .2s ease;
+  }
+  .hd-suivi-btn:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, .4);
+  }
+
+  .hd-page {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 30px 24px 60px;
+  }
+  .hd-wrapper {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 32px;
+    width: 100%;
+    max-width: 1180px;
+    align-items: start;
+  }
+
+  .hd-deco {
+    position: sticky;
+    top: 30px;
+    overflow: hidden;
+    text-align: center;
+    padding: 36px 24px;
+    border-radius: 20px;
+    background: linear-gradient(180deg,
+                rgba(255, 255, 255, .08) 0%,
+                rgba(255, 255, 255, .03) 100%);
+    border: 1px solid rgba(255, 255, 255, .1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .hd-deco-glow {
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle,
+                rgba(59, 130, 246, .5) 0%,
+                rgba(59, 130, 246, 0) 70%);
+    pointer-events: none;
+  }
+  .hd-deco-logo {
+    position: relative;
+    height: 130px;
+    width: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #fff;
+    padding: 6px;
+    box-shadow:
+      0 10px 30px rgba(59, 130, 246, .45),
+      0 0 0 4px rgba(255, 255, 255, .08);
+    margin-bottom: 24px;
+  }
+  .hd-deco-text {
+    position: relative;
+    margin: 0 0 18px;
+    color: #f1f5f9;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: .02em;
+  }
+  .hd-deco-sub {
+    color: #93c5fd;
+    font-weight: 600;
+  }
+  .hd-deco-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(147, 197, 253, .6), transparent);
+    margin: 0 auto 14px;
+  }
+  .hd-deco-note {
+    position: relative;
+    margin: 0;
+    font-size: .82rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+
+  .hd-form-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .hd-header {
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .hd-header h1 {
+    margin: 0 0 10px;
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: #fff;
+  }
+  .hd-subtitle {
+    margin: 0;
+    font-size: .95rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    max-width: 600px;
+  }
+
+  .hd-flash {
+    padding: 12px 16px;
+    border-radius: var(--hd-radius-sm);
+    font-size: .9rem;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+  }
+  .hd-flash-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .hd-flash-error,
+  .hd-flash-danger  { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .hd-flash-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+  .hd-flash-info    { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+
+  .hd-form {
+    background: var(--hd-bg-card);
+    border-radius: var(--hd-radius);
+    padding: 32px;
+    box-shadow: var(--hd-shadow-lg);
+    border: 1px solid rgba(255, 255, 255, .05);
+  }
+
+  .hd-section {
+    border: none;
+    padding: 0;
+    margin: 0 0 28px;
+  }
+  .hd-section:last-of-type { margin-bottom: 8px; }
+
+  .hd-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--hd-text);
+    margin-bottom: 16px;
+    padding: 0;
+  }
+  .hd-section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--hd-primary-soft);
+    color: var(--hd-primary-dark);
+    font-size: .8rem;
+    font-weight: 800;
+  }
+  .hd-optional {
+    color: var(--hd-text-mute);
+    font-weight: 500;
+    font-size: .85rem;
+  }
+
+  .hd-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .hd-row:last-child { margin-bottom: 0; }
+
+  .hd-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .hd-field:last-child { margin-bottom: 0; }
+
+  .hd-field label {
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--hd-text);
+  }
+  .hd-req {
+    color: #dc2626;
+    font-weight: 700;
+  }
+
+  .hd-field input[type="text"],
+  .hd-field input[type="email"],
+  .hd-field textarea {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: .95rem;
+    color: var(--hd-text);
+    background: #f8fafc;
+    border: 1.5px solid var(--hd-border);
+    border-radius: var(--hd-radius-sm);
+    outline: none;
+    transition: all .18s ease;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .hd-field input::placeholder,
+  .hd-field textarea::placeholder {
+    color: #94a3b8;
+  }
+  .hd-field input:hover,
+  .hd-field textarea:hover {
+    border-color: #cbd5e1;
+    background: #fff;
+  }
+  .hd-field input:focus,
+  .hd-field textarea:focus {
+    border-color: var(--hd-primary);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+  }
+  .hd-field textarea {
+    resize: vertical;
+    min-height: 130px;
+    line-height: 1.55;
+  }
+
+  .hd-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .hd-checkbox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--hd-border);
+    border-radius: var(--hd-radius-sm);
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all .18s ease;
+    user-select: none;
+  }
+  .hd-checkbox:hover {
+    border-color: #cbd5e1;
+    background: #fff;
+  }
+  .hd-checkbox input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .hd-checkbox-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #cbd5e1;
+    border-radius: 5px;
+    background: #fff;
+    flex-shrink: 0;
+    position: relative;
+    transition: all .18s ease;
+  }
+  .hd-checkbox-box::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='3 8 6.5 11.5 13 5'/%3E%3C/svg%3E") center/12px no-repeat;
+    opacity: 0;
+    transition: opacity .15s ease;
+  }
+  .hd-checkbox input:checked + .hd-checkbox-box {
+    background: var(--hd-primary);
+    border-color: var(--hd-primary);
+  }
+  .hd-checkbox input:checked + .hd-checkbox-box::after {
+    opacity: 1;
+  }
+  .hd-checkbox input:checked ~ .hd-checkbox-label {
+    color: var(--hd-primary-dark);
+    font-weight: 700;
+  }
+  .hd-checkbox:has(input:checked) {
+    border-color: var(--hd-primary);
+    background: #eff6ff;
+  }
+  .hd-checkbox-label {
+    font-size: .9rem;
+    color: var(--hd-text-soft);
+    font-weight: 500;
+    transition: color .15s ease;
+  }
+
+  .hd-photo-zone {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .hd-photo-preview {
+    width: 160px;
+    height: 160px;
+    border-radius: var(--hd-radius-sm);
+    border: 2px dashed var(--hd-border);
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: all .18s ease;
+  }
+  .hd-photo-preview:hover {
+    border-color: var(--hd-primary);
+    background: #eff6ff;
+  }
+  .hd-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hd-photo-placeholder {
+    font-size: 2.4rem;
+    opacity: .5;
+  }
+
+  .hd-photo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hd-upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--hd-border);
+    border-radius: var(--hd-radius-sm);
+    background: #fff;
+    cursor: pointer;
+    transition: all .18s ease;
+  }
+  .hd-upload-btn:hover {
+    border-color: var(--hd-primary);
+    background: #eff6ff;
+    transform: translateY(-1px);
+    box-shadow: var(--hd-shadow-md);
+  }
+  .hd-upload-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .hd-upload-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hd-upload-text b {
+    font-size: .9rem;
+    color: var(--hd-text);
+  }
+  .hd-upload-text small {
+    font-size: .78rem;
+    color: var(--hd-text-mute);
+  }
+  .hd-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border-radius: var(--hd-radius-sm);
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1.5px solid #fecaca;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s ease;
+    align-self: flex-start;
+  }
+  .hd-remove-btn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+
+  .hd-hint {
+    margin: 6px 0 0;
+    font-size: .78rem;
+    color: var(--hd-text-mute);
+    line-height: 1.5;
+  }
+
+  .hd-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--hd-border);
+    margin-top: 8px;
+  }
+  .hd-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 28px;
+    font-size: .95rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--hd-primary) 0%, var(--hd-primary-dark) 100%);
+    border: none;
+    border-radius: var(--hd-radius-sm);
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, .35);
+    transition: all .2s ease;
+    font-family: inherit;
+  }
+  .hd-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(37, 99, 235, .45);
+  }
+  .hd-submit:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 980px) {
+    .hd-wrapper {
+      grid-template-columns: 1fr;
+      max-width: 720px;
+      gap: 24px;
+    }
+    .hd-deco {
+      position: static;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      text-align: left;
+      padding: 20px 24px;
+    }
+    .hd-deco-logo { height: 80px; width: 80px; margin-bottom: 0; }
+    .hd-deco-text { margin-bottom: 0; }
+    .hd-deco-line, .hd-deco-note, .hd-deco-glow { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .hd-topbar { padding: 14px 16px 0; }
+    .hd-page { padding: 20px 14px 40px; }
+    .hd-form { padding: 22px 18px; }
+    .hd-header h1 { font-size: 1.5rem; }
+    .hd-row { grid-template-columns: 1fr; }
+    .hd-checkbox-grid { grid-template-columns: 1fr; }
+    .hd-photo-zone { grid-template-columns: 1fr; }
+    .hd-photo-preview { width: 100%; height: 200px; }
+    .hd-actions { align-items: stretch; }
+    .hd-submit { justify-content: center; }
+    .hd-deco {
+      flex-direction: column;
+      text-align: center;
+      gap: 12px;
+    }
+    .hd-deco-logo { height: 70px; width: 70px; }
+  }
+</style>
+
+<script>
+  let _currentObjectURL = null;
+
+  function _revokeCurrentURL() {
+    if (_currentObjectURL) {
+      URL.revokeObjectURL(_currentObjectURL);
+      _currentObjectURL = null;
+    }
+  }
+
+  function afficherApercu(input) {
+    const fichier = input.files && input.files[0];
+    if (!fichier) return;
+
+    if (fichier.size > 5 * 1024 * 1024) {
+      alert("La photo dépasse 5 Mo. Choisissez une image plus petite.");
+      input.value = "";
+      return;
+    }
+    if (!fichier.type.startsWith("image/")) {
+      alert("Le fichier sélectionné n'est pas une image.");
+      input.value = "";
+      return;
+    }
+
+    const camera  = document.getElementById('inputCamera');
+    const galerie = document.getElementById('inputGalerie');
+
+    if (input.id === 'inputCamera') {
+      galerie.value = "";
+      galerie.disabled = true;
+    } else {
+      camera.value = "";
+      camera.disabled = true;
+    }
+    input.disabled = false;
+
+    _revokeCurrentURL();
+    _currentObjectURL = URL.createObjectURL(fichier);
+
+    const preview     = document.getElementById('photoPreview');
+    const placeholder = document.getElementById('photoPlaceholder');
+    const btnRetirer  = document.getElementById('btnRetirerPhoto');
+
+    preview.src = _currentObjectURL;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    btnRetirer.style.display = 'inline-flex';
+  }
+
+  function retirerPhoto() {
+    const camera  = document.getElementById('inputCamera');
+    const galerie = document.getElementById('inputGalerie');
+
+    camera.value  = "";
+    galerie.value = "";
+    camera.disabled  = false;
+    galerie.disabled = false;
+
+    _revokeCurrentURL();
+
+    const preview     = document.getElementById('photoPreview');
+    const placeholder = document.getElementById('photoPlaceholder');
+    const btnRetirer  = document.getElementById('btnRetirerPhoto');
+
+    preview.src = "";
+    preview.style.display = 'none';
+    placeholder.style.display = 'inline-block';
+    btnRetirer.style.display = 'none';
+  }
+
+  window.addEventListener('beforeunload', _revokeCurrentURL);
+
+  (function () {
+    const form = document.getElementById('formDemande');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      const cochees = document.querySelectorAll('input[name="categories"]:checked');
+      if (cochees.length === 0) {
+        e.preventDefault();
+        alert("Veuillez cocher au moins un type de problème.");
+        const first = document.querySelector('input[name="categories"]');
+        if (first) first.focus();
+        return false;
+      }
+    });
+  })();
+</script>
+{% endblock %}

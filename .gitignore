@@ -1,0 +1,24 @@
+# Environnement virtuel Python
+.venv/
+venv/
+env/
+
+# Fichiers de configuration sensibles (mots de passe, clés secrètes)
+.env
+
+# Dossiers de cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Fichiers uploadés par les utilisateurs (ne pas versionner les données)
+static/uploads/
+!static/uploads/.gitkeep
+
+# Fichiers de l'IDE (Visual Studio Code)
+.vscode/
+
+# Fichiers système (Windows)
+Thumbs.db
+Desktop.ini
